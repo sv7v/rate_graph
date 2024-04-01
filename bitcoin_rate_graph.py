@@ -23,7 +23,7 @@ class BitcoinRateGraph:
 	def _readData(self, s):
 		canvas = BG_HtmlCanvas(640, 480)
 		document <= canvas.get()
-		self._decart = BG_Decart(canvas, BG_Frame())
+		self._decart = BG_Decart(canvas, (BG_LogY()), BG_Frame())
 		self._decart.draw(BG_TableFunc(BitcoinRateGraph._convertData(s)))
 
 	def __init__(self):
