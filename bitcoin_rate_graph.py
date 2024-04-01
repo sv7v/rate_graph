@@ -23,13 +23,12 @@ class BitcoinRateGraph:
 	def _readData(self, s):
 		canvas = BG_HtmlCanvas(640, 480)
 		document <= canvas.get()
-		self._decart  = BG_Decart(canvas, (BG_LogY()), BG_Frame())
+		self._decart  = BG_Decart(canvas, (BG_LogY(), BG_Affinis(-0.3)), BG_Frame())
 		self._bitcoin = BG_TableFunc(BitcoinRateGraph._convertData(s))
 		self._decart.draw(self._bitcoin)
 
 	def redraw(self):
-		print(820)
-		self._decart.setProp(BG_LogY() if self._checkbox.getState() else ())
+		self._decart.setProp((BG_LogY() if self._checkbox.getState() else (), BG_Affinis(-0.3)))
 		self._decart.redraw(self._bitcoin)
 
 	def __init__(self):
