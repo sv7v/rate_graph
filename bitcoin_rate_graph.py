@@ -21,9 +21,7 @@ class BitcoinRateGraph:
 				       float(r))
 
 	def _readData(self, s):
-		canvas = BG_HtmlCanvas(640, 480)
-		document <= canvas.get()
-		self._decart  = BG_Decart(canvas, (BG_LogY(), BG_Affinis(-0.31)), BG_Frame(), BG_Grid(), BG_BubbleLevel(10))
+		self._decart  = BG_Decart(self.__canvas, (BG_LogY(), BG_Affinis(-0.31)), BG_Frame(), BG_Grid(), BG_BubbleLevel(10))
 		self._bitcoin = BG_TableFunc(BitcoinRateGraph._convertData(s))
 		self._decart.draw(self._bitcoin, BG_Space(2020, 1e4, 2028, 1e6))
 
@@ -39,6 +37,11 @@ class BitcoinRateGraph:
 		self._checkbox = BG_CheckBox(lambda event: self.redraw())
 		document <= self._checkbox.get()
 		self._checkbox.set()
+
+		document <= html.BR()
+
+		self.__canvas = BG_HtmlCanvas(640, 480)
+		document <= self.__canvas.get()
 #class BitcoinRateGraph:
 
 def main():
