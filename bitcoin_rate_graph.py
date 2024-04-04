@@ -20,6 +20,10 @@ class BitcoinRateGraph:
 				yield (b+c/366,
 				       float(r))
 
+	def fit(self):
+		self.__canvas.fit()
+		self.redraw()
+
 	def _readData(self, s):
 		self._decart  = BG_Decart(self.__canvas, (BG_LogY(), BG_Affinis(-0.31)), BG_Frame(), BG_Grid(), BG_BubbleLevel(10))
 		self._bitcoin = BG_TableFunc(BitcoinRateGraph._convertData(s))
@@ -40,8 +44,11 @@ class BitcoinRateGraph:
 
 		document <= html.BR()
 
-		self.__canvas = BG_HtmlCanvas(640, 480)
+		self.__canvas = BG_HtmlCanvas(1,1)
 		document <= self.__canvas.get()
+		self.__canvas.fit()
+
+		window.bind('resize', lambda event:self.fit())
 #class BitcoinRateGraph:
 
 def main():
