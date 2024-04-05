@@ -26,19 +26,27 @@ class BitcoinRateGraph:
 
 	def draw(self, s):
 		self._decart.draw(BG_TableFunc(BitcoinRateGraph._convertData(s)))
+		self._log_div.show()
+		self._affinis_range.show()
 
 	def __init__(self):
 		document <= 'Файл данных: '
 		document <= BG_LocalTextFile(lambda s: self.draw(s)).get()
 
-		document <= 'Логарифмический масштаб: '
+		self._log_div = BG_Div()
+		self._log_div.show(False)
+		document <= self._log_div.get()
+
+		self._log_div <= 'Логарифмический масштаб: '
+
 		def checkbox_callback(checked):
 			if checked: self._decart.setProp(BG_LogY())
-			else:     self._decart.delProp(BG_LogY())
+			else:       self._decart.delProp(BG_LogY())
 			self._decart.redraw()
-		self._logY_checkbox = BG_CheckBox(checkbox_callback)
-		document <= self._logY_checkbox.get()
-		self._logY_checkbox.set()
+		logY_checkbox = BG_CheckBox(checkbox_callback)
+		logY_checkbox.set()
+
+		self._log_div <= logY_checkbox
 
 		document <= html.BR()
 
@@ -50,13 +58,15 @@ class BitcoinRateGraph:
 			self._decart.setProp(BG_Affinis(value))
 			self._decart.redraw()
 		self._affinis_range = BG_Range(affinis_callback)
+		self._affinis_range.show(False)
+
 		document <= self._affinis_range.get()
 
 		window.bind('resize', lambda event:self.fit())
 
 		self._decart = BG_Decart(self.__canvas)
 
-		if self._logY_checkbox.getState():
+		if logY_checkbox.getState():
 			self._decart.setProp(BG_LogY())
 
 		self._decart.setProp(BG_Affinis(self._affinis_range.getState()))
