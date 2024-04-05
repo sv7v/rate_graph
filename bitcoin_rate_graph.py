@@ -22,30 +22,23 @@ class BitcoinRateGraph:
 
 	def fit(self):
 		self.__canvas.fit()
-		self.redraw()
+		self._decart.redraw()
 
-	def _readData(self, s):
-		self._decart  = BG_Decart(self.__canvas,
-		                          (BG_LogY(), BG_Affinis(self._range.getState())),
-		                          BG_Frame(),
-		                          BG_Grid(),
-		                          BG_BubbleLevel(10))
-		self._bitcoin = BG_TableFunc(BitcoinRateGraph._convertData(s))
-		self._decart.draw(self._bitcoin, BG_Space(2020, 1e4, 2028, 1e6))
-
-	def redraw(self):
-		self._decart.setProp((BG_LogY() if self._checkbox.getState() else (),
-		                     BG_Affinis(self._range.getState())))
-		self._decart.redraw(self._bitcoin, BG_Space(2020, 1e4, 2028, 1e6))
+	def draw(self, s):
+		self._decart.draw(BG_TableFunc(BitcoinRateGraph._convertData(s)))
 
 	def __init__(self):
 		document <= 'Файл данных: '
-		document <= BG_LocalTextFile(self._readData).get()
+		document <= BG_LocalTextFile(lambda s: self.draw(s)).get()
 
-		document <= 'Логарифмический масштаб:'
-		self._checkbox = BG_CheckBox(lambda event: self.redraw())
-		document <= self._checkbox.get()
-		self._checkbox.set()
+		document <= 'Логарифмический масштаб: '
+		def checkbox_callback(checked):
+			if checked: self._decart.setProp(BG_LogY())
+			else:     self._decart.delProp(BG_LogY())
+			self._decart.redraw()
+		self._logY_checkbox = BG_CheckBox(checkbox_callback)
+		document <= self._logY_checkbox.get()
+		self._logY_checkbox.set()
 
 		document <= html.BR()
 
@@ -53,10 +46,24 @@ class BitcoinRateGraph:
 		document <= self.__canvas.get()
 		self.__canvas.fit()
 
-		self._range = BG_Range(lambda x: self.redraw())
-		document <= self._range.get()
+		def affinis_callback(value):
+			self._decart.setProp(BG_Affinis(value))
+			self._decart.redraw()
+		self._affinis_range = BG_Range(affinis_callback)
+		document <= self._affinis_range.get()
 
 		window.bind('resize', lambda event:self.fit())
+
+		self._decart = BG_Decart(self.__canvas)
+
+		if self._logY_checkbox.getState():
+			self._decart.setProp(BG_LogY())
+
+		self._decart.setProp(BG_Affinis(self._affinis_range.getState()))
+
+		self._decart.setRooler(BG_Frame(),
+		                       BG_Grid(),
+		                       BG_BubbleLevel(20))
 #class BitcoinRateGraph:
 
 def main():
