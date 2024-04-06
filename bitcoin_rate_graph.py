@@ -48,6 +48,9 @@ class BitcoinRateGraph:
 
 		self._log_div <= logY_checkbox
 
+		date_div = BG_Div()
+		self._log_div <= date_div
+
 		document <= html.BR()
 
 		self.__canvas = BG_HtmlCanvas(1,1)
@@ -74,6 +77,10 @@ class BitcoinRateGraph:
 		self._decart.setRooler(BG_Frame(),
 		                       BG_Grid(),
 		                       BG_BubbleLevel(20))
+
+		self._decart.mousemove(lambda x, y: date_div.setText('Дата: %s Курс: %f' % (str(date.fromtimestamp((x-1970)*
+		                                                                                                   (365.25*24*60*60))),
+		                                                                            y)))
 #class BitcoinRateGraph:
 
 def main():
