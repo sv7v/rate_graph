@@ -7,31 +7,33 @@ from browser        import *
 from br_gui         import *
 
 from datetime       import date
-from io             import StringIO
 
 class BitcoinRateGraph:
-	def _convertData(s):
-		with StringIO(s) as f:
-			for i in f.readlines():
-				d, r = i.split(' ')
-				a = date.fromisoformat(d).timetuple()
-				b = a.tm_year
-				c = a.tm_yday
-				yield (b+c/366,
-				       float(r))
-
 	def fit(self):
 		self.__canvas.fit()
 		self._decart.redraw()
 
 	def draw(self, s):
-		self._decart.draw(BG_TableFunc(BitcoinRateGraph._convertData(s)))
+		def convertDate(x):
+			a = date.fromisoformat(x).timetuple()
+			b = a.tm_year
+			c = a.tm_yday
+			return b+c/366
+
+		def convert(x):
+			return map(lambda i: (convertDate(i[0]), float(i[1])), x)
+
+		self._decart.draw(BG_TableFunc(convert(s)))
+
 		self._log_div.show()
 		self._affinis_range.show()
 
 	def __init__(self):
 		document <= 'Файл данных: '
-		document <= BG_LocalTextFile(lambda s: self.draw(s)).get()
+		document <= BG_LocalTextFile(lambda s:
+		                                    self.draw(map(lambda i:
+		                                                         i.split(' '),
+		                                                  s))).get()
 
 		self._log_div = BG_Div()
 		self._log_div.show(False)
