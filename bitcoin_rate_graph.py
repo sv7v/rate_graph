@@ -54,8 +54,10 @@ class BitcoinRateGraph:
 
 		self._log_div <= logY_checkbox
 
-		date_div = BG_Div()
-		self._log_div <= date_div
+		self.date_div = BG_Div()
+		self.date_div.inline()
+		self._log_div <= "."
+		self._log_div <= self.date_div
 
 		document <= html.BR()
 
