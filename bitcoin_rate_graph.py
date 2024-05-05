@@ -54,6 +54,21 @@ class BitcoinRateGraph:
 
 		self._log_div <= logY_checkbox
 
+		self._log_div <= ". Горизонтальный уровень:"
+
+		def bubblelevel_checkbox_callback(checked):
+			if checked:
+				self._decart.setRooler(BG_Frame(),
+				                       BG_Grid(),
+				                       BG_BubbleLevel(20))
+			else:
+				self._decart.setRooler(BG_Frame(),
+				                       BG_Grid())
+			self._decart.redraw()
+
+		bubblelevel = BG_CheckBox(bubblelevel_checkbox_callback)
+		self._log_div <= bubblelevel
+
 		self.date_div = BG_Div()
 		self.date_div.inline()
 		self._log_div <= "."
@@ -83,8 +98,7 @@ class BitcoinRateGraph:
 		self._decart.setProp(BG_Affinis(self._affinis_range.getState()))
 
 		self._decart.setRooler(BG_Frame(),
-		                       BG_Grid(),
-		                       BG_BubbleLevel(20))
+		                       BG_Grid())
 #class BitcoinRateGraph:
 
 def main():
