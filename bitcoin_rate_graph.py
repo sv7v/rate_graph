@@ -28,9 +28,13 @@ class BitcoinRateGraph:
 		self._log_div.show()
 		self._affinis_range.show()
 
-		self._decart.mousemove(lambda x, y: self.date_div.setText(' Дата: %s, курс: %f.' % (str(date.fromtimestamp((x-1970)*
-		                                                                                                          (365.25*24*60*60))),
-		                                                                                   y)))
+		def mousemove_callback(x, y):
+			self.date_div.setText(' Дата: %s, курс: %f.' % (str(date.fromtimestamp((x-1970)*
+			                                                                       (365.25*24*60*60))),
+			                                                y))
+			self._verticalRooler.draw(x)
+
+		self._decart.mousemove(mousemove_callback)
 
 	def __init__(self):
 		document <= 'Файл данных: '
@@ -99,6 +103,8 @@ class BitcoinRateGraph:
 
 		self._decart.setRooler(BG_Frame(),
 		                       BG_Grid())
+
+		self._verticalRooler = BG_VerticalRooler(self.__canvas)
 #class BitcoinRateGraph:
 
 def main():
