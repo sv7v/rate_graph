@@ -42,24 +42,25 @@ class BitcoinRateGraph:
 		                                    self.draw(map(lambda i:
 		                                                         i.split(' '),
 		                                                  s))).get()
-
+		#--------------------------------------------------------------
 		self._log_div = BG_Div()
 		self._log_div.show(False)
 		document <= self._log_div.get()
-
-		self._log_div <= 'Логарифмический масштаб: '
-
+		#-----------------------
+		self._log_div <= 'Логарифмический масштаб:'
+		#-----------------------
 		def checkbox_callback(checked):
 			if checked: self._decart.setProp(BG_LogY())
 			else:       self._decart.delProp(BG_LogY())
 			self._decart.redraw()
+
 		logY_checkbox = BG_CheckBox(checkbox_callback)
 		logY_checkbox.set()
 
 		self._log_div <= logY_checkbox
-
+		#-----------------------
 		self._log_div <= ". Горизонтальный уровень:"
-
+		#-----------------------
 		def bubblelevel_checkbox_callback(checked):
 			if checked:
 				self._decart.setRooler(BG_Frame(),
@@ -72,28 +73,29 @@ class BitcoinRateGraph:
 
 		bubblelevel = BG_CheckBox(bubblelevel_checkbox_callback)
 		self._log_div <= bubblelevel
-
+		#-----------------------
 		self.date_div = BG_Div()
 		self.date_div.inline()
 		self._log_div <= "."
 		self._log_div <= self.date_div
-
+		#--------------------------------------------------------------
 		document <= html.BR()
-
+		#--------------------------------------------------------------
 		self.__canvas = BG_HtmlCanvas(1,1)
 		document <= self.__canvas.get()
 		self.__canvas.fit()
-
+		#--------------------------------------------------------------
 		def affinis_callback(value):
 			self._decart.setProp(BG_Affinis(value))
 			self._decart.redraw()
+
 		self._affinis_range = BG_Range(affinis_callback)
 		self._affinis_range.show(False)
 
 		document <= self._affinis_range.get()
-
+		#--------------------------------------------------------------
 		window.bind('resize', lambda event:self.fit())
-
+		#--------------------------------------------------------------
 		self._decart = BG_Decart(self.__canvas)
 
 		if logY_checkbox.getState():
