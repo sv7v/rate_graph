@@ -25,43 +25,46 @@ class BitcoinRateGraph:
 
 		self._decart.draw(BG_TableFunc(convert(s)))
 
-		self._log_div.show()
+		self._header.show()
 		self._affinis_range.show()
 
 		def mousemove_callback(x, y):
-			self.date_div.setText(' Дата: %s, курс: %f.' % (str(date.fromtimestamp((x-1970)*
-			                                                                       (365.25*24*60*60))),
-			                                                y))
+			self._date.setText('Дата: %s, курс: %f.' % (str(date.fromtimestamp((x-1970)*
+			                                                                   (365.25*24*60*60))),
+			                                            y))
 			self._verticalRooler.draw(x)
 
 		self._decart.mousemove(mousemove_callback)
 
-	def __init__(self):
-		document <= 'Файл данных: '
-		document <= BG_LocalTextFile(lambda s:
-		                                    self.draw(map(lambda i:
-		                                                         i.split(' '),
-		                                                  s))).get()
-		#--------------------------------------------------------------
-		self._log_div = BG_Div()
-		self._log_div.show(False)
-		document <= self._log_div.get()
-		#-----------------------
-		self._log_div <= 'Логарифмический масштаб:'
-		#-----------------------
-		def checkbox_callback(checked):
+	def __LoadData(self):
+		ret = BG_Div()
+		ret.inline()
+		ret <= 'Файл данных:'
+		ret <= BG_LocalTextFile(lambda s:
+		                               self.draw(map(lambda i:
+		                                                    i.split(' '),
+		                                             s)))
+		return ret
+
+	def __LogScaleCheckBox(self):
+		def callback(checked):
 			if checked: self._decart.setProp(BG_LogY())
 			else:       self._decart.delProp(BG_LogY())
 			self._decart.redraw()
 
-		logY_checkbox = BG_CheckBox(checkbox_callback)
-		logY_checkbox.set()
+		self.logY_checkbox = BG_CheckBox(callback)
+		self.logY_checkbox.set()
+		return self.logY_checkbox
 
-		self._log_div <= logY_checkbox
-		#-----------------------
-		self._log_div <= ". Горизонтальный уровень:"
-		#-----------------------
-		def bubblelevel_checkbox_callback(checked):
+	def __LogScale(self):
+		ret = BG_Div()
+		ret.inline()
+		ret <= 'Логарифмический масштаб:'
+		ret <= self.__LogScaleCheckBox()
+		return ret
+
+	def __BubbleLevelCheckBox(self):
+		def callback(checked):
 			if checked:
 				self._decart.setRooler(BG_Frame(),
 				                       BG_Grid(),
@@ -71,34 +74,63 @@ class BitcoinRateGraph:
 				                       BG_Grid())
 			self._decart.redraw()
 
-		bubblelevel = BG_CheckBox(bubblelevel_checkbox_callback)
-		self._log_div <= bubblelevel
-		#-----------------------
-		self.date_div = BG_Div()
-		self.date_div.inline()
-		self._log_div <= "."
-		self._log_div <= self.date_div
-		#--------------------------------------------------------------
-		document <= html.BR()
-		#--------------------------------------------------------------
+		return BG_CheckBox(callback)
+
+	def __BubbleLevel(self):
+		ret = BG_Div()
+		ret.inline()
+		ret <= 'Горизонтальный уровень:'
+		ret <= self.__BubbleLevelCheckBox()
+		return ret
+
+	def __Date(self):
+		self._date = BG_Div()
+		self._date.inline()
+
+		return self._date
+
+	def __Header(self):
+		self._header = BG_Div()
+		self._header.inline()
+
+		self._header <= self.__LogScale()
+		self._header <= '. '
+		self._header <= self.__BubbleLevel()
+		self._header <= '. '
+		self._header <= self.__Date()
+
+		self._header.show(False)
+
+		return self._header
+
+	def __Canvas(self):
 		self.__canvas = BG_HtmlCanvas(1,1)
-		document <= self.__canvas.get()
-		self.__canvas.fit()
-		#--------------------------------------------------------------
-		def affinis_callback(value):
+#		self.__canvas.fit()
+		return self.__canvas
+
+	def __Range(self):
+		def callback(value):
 			self._decart.setProp(BG_Affinis(value))
 			self._decart.redraw()
 
-		self._affinis_range = BG_Range(affinis_callback)
+		self._affinis_range = BG_Range(callback)
 		self._affinis_range.show(False)
 
-		document <= self._affinis_range.get()
+		return self._affinis_range
+
+	def __init__(self):
+		document <= self.__LoadData().get()
+		document <= self.__Header().get()
+		document <= html.BR()
+		document <= self.__Canvas().get()
+		self.__canvas.fit()
+		document <= self.__Range().get()
 		#--------------------------------------------------------------
 		window.bind('resize', lambda event:self.fit())
 		#--------------------------------------------------------------
 		self._decart = BG_Decart(self.__canvas)
 
-		if logY_checkbox.getState():
+		if self.logY_checkbox.getState():
 			self._decart.setProp(BG_LogY())
 
 		self._decart.setProp(BG_Affinis(self._affinis_range.getState()))
