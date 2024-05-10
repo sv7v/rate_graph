@@ -159,8 +159,10 @@ class BitcoinRateGraph:
 				                                                               (365.25*24*60*60))),
 				                                        y))
 				verticalRooler.mouseover(dot_x, x)
+				leftRightBorder.mouseover(dot_x, x)
 			decart.mouseover(mouseover)
 			verticalRooler  = BG_VerticalRooler(decart)
+			leftRightBorder = BG_LeftRightBorder(decart)
 		#def loadData_callback(s):
 
 		loadData.setCallback(loadData_callback)
