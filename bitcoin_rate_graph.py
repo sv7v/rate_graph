@@ -153,11 +153,11 @@ class BitcoinRateGraph:
 		def loadData_callback(s):
 			decart.draw_callback(s)
 			header.show()
-			def mouseover(x, y):
+			def mouseover(dot_x, dot_y, x, y):
 				header.setDate('Дата: %s, курс: %f.' % (str(date.fromtimestamp((x-1970)*
 				                                                               (365.25*24*60*60))),
 				                                        y))
-				verticalRooler.mouseover(x)
+				verticalRooler.mouseover(dot_x, x)
 			decart.mouseover(mouseover)
 		loadData.setCallback(loadData_callback)
 
