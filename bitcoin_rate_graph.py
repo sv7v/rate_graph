@@ -94,7 +94,7 @@ class BitcoinRateGraph:
 		def getState(self):
 			return self._cb.getState()
 
-	class Date(BG_Div):
+	class BRG_Date(BG_Div):
 		def __init__(self):
 			super().__init__()
 			self.inline()
@@ -110,8 +110,14 @@ class BitcoinRateGraph:
 			self._bl = BitcoinRateGraph.BubbleLevel()
 			self <= self._bl
 			self <= '. '
-			self._d = BitcoinRateGraph.Date()
+			self._d = BitcoinRateGraph.BRG_Date()
 			self <= self._d
+			self <= '. '
+			self._d0 = BitcoinRateGraph.BRG_Date()
+			self <= self._d0
+			self <= '. '
+			self._d1 = BitcoinRateGraph.BRG_Date()
+			self <= self._d1
 
 			self.show(False)
 
@@ -129,6 +135,13 @@ class BitcoinRateGraph:
 
 		def setDate(self, text):
 			self._d.setText(text)
+
+		def _setDate01(self, d, x):
+			d.setText(str(date.fromtimestamp((x-1970)*
+			                                 (365.25*24*60*60))))
+
+		def setDate0(self, date): self._setDate01(self._d0, date)
+		def setDate1(self, date): self._setDate01(self._d1, date)
 
 	def __Range(self):
 		def callback(value):
@@ -154,15 +167,28 @@ class BitcoinRateGraph:
 			decart.draw_callback(s)
 
 			header.show()
+
+			verticalRooler  = BG_VerticalRooler(decart)
+			leftRightBorder = BG_LeftRightBorder(decart)
+
 			def mouseover(dot_x, dot_y, x, y):
 				header.setDate('Дата: %s, курс: %f.' % (str(date.fromtimestamp((x-1970)*
 				                                                               (365.25*24*60*60))),
 				                                        y))
 				verticalRooler.mouseover(dot_x, x)
 				leftRightBorder.mouseover(dot_x, x)
+
+			def mousedrag(dot_x0, dot_y0,
+			              dot_x1, dot_y1,
+			              x0, y0,
+			              x1, y1):
+				leftRightBorder.mousedrag(dot_x0, dot_x1, x0, x1)
+				date0, date1 = leftRightBorder.get()
+				header.setDate0(date0)
+				header.setDate1(date1)
+
 			decart.mouseover(mouseover)
-			verticalRooler  = BG_VerticalRooler(decart)
-			leftRightBorder = BG_LeftRightBorder(decart)
+			decart.mousedrag(mousedrag)
 		#def loadData_callback(s):
 
 		loadData.setCallback(loadData_callback)
