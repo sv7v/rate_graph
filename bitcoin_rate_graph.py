@@ -152,6 +152,7 @@ class BitcoinRateGraph:
 
 		def loadData_callback(s):
 			decart.draw_callback(s)
+
 			header.show()
 			def mouseover(dot_x, dot_y, x, y):
 				header.setDate('Дата: %s, курс: %f.' % (str(date.fromtimestamp((x-1970)*
@@ -159,6 +160,9 @@ class BitcoinRateGraph:
 				                                        y))
 				verticalRooler.mouseover(dot_x, x)
 			decart.mouseover(mouseover)
+			verticalRooler  = BG_VerticalRooler(decart)
+		#def loadData_callback(s):
+
 		loadData.setCallback(loadData_callback)
 
 		header.setCallback_LogScale(decart.logY_callback)
@@ -178,9 +182,6 @@ class BitcoinRateGraph:
 
 		decart.setRooler(BG_Frame(),
 		                 BG_Grid())
-
-		verticalRooler = BG_VerticalRooler()
-		decart.setTools(verticalRooler)
 #class BitcoinRateGraph:
 
 def main():
