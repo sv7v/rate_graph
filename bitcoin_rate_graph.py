@@ -53,95 +53,53 @@ class BRG_Decart(BG_Decart):
 #class BRG_Decart(BG_Decart):
 
 class BitcoinRateGraph:
-	class __LoadData(BG_Div):
-		def __init__(self):
-			super().__init__()
-			self.inline()
-			self <= 'Файл данных:'
-			self <= BG_LocalTextFile(lambda s:
-			                                self._callback(map(lambda i: i.split(' '),
-			                                                   s)))
+	def __LoadData(self):
+		ret = BG_Div()
+		ret.inline()
+		ret <= 'Файл данных:'
+		ret <= BG_LocalTextFile(lambda s:
+		                               self._loadData_callback(map(lambda i: i.split(' '),
+		                                                           s)))
+		return ret
 
-		def setCallback(self, callback):
-			self._callback = callback
+	def __CheckBox(self, text):
+		ret = BG_Div()
+		ret.inline()
+		ret <= str(text)
+		cb = BG_CheckBox()
+		ret <= cb
+		return cb, ret
 
-	class LogScale(BG_Div):
-		def __init__(self):
-			super().__init__()
-			self.inline()
-			self <= 'Логарифмический масштаб:'
-			self._cb = BG_CheckBox()
-			self._cb.set()
-			self <= self._cb
+	def __Header(self):
+		ret = BG_Div()
+		ret.inline()
 
-		def setCallback(self, callback):
-			self._cb.setCallback(callback)
+		self._logScale, a = self.__CheckBox('Логарифмический масштаб:')
+		self._logScale.set()
+		ret <= a
+		ret <= '. '
 
-		def getState(self):
-			return self._cb.getState()
+		self._bubbleLevel, a = self.__CheckBox('Логарифмический масштаб:')
+		ret <= a
+		ret <= '. '
 
-	class BubbleLevel(BG_Div):
-		def __init__(self):
-			super().__init__()
-			self.inline()
-			self <= 'Горизонтальный уровень:'
-			self._cb = BG_CheckBox()
-			self <= self._cb
+		self._dateRate = BG_Div()
+		self._dateRate.inline()
+		ret <= self._dateRate
+		ret <= '. '
 
-		def setCallback(self, callback):
-			self._cb.setCallback(callback)
+		self._dateFrom = BG_Div()
+		self._dateFrom.inline()
+		ret <= self._dateFrom
+		ret <= '. '
 
-		def getState(self):
-			return self._cb.getState()
+		self._dateTo = BG_Div()
+		self._dateTo.inline()
+		ret <= self._dateTo
+		ret <= '. '
 
-	class BRG_Date(BG_Div):
-		def __init__(self):
-			super().__init__()
-			self.inline()
-
-	class __Header(BG_Div):
-		def __init__(self):
-			super().__init__()
-			self.inline()
-
-			self._ls = BitcoinRateGraph.LogScale()
-			self <= self._ls
-			self <= '. '
-			self._bl = BitcoinRateGraph.BubbleLevel()
-			self <= self._bl
-			self <= '. '
-			self._d = BitcoinRateGraph.BRG_Date()
-			self <= self._d
-			self <= '. '
-			self._d0 = BitcoinRateGraph.BRG_Date()
-			self <= self._d0
-			self <= '. '
-			self._d1 = BitcoinRateGraph.BRG_Date()
-			self <= self._d1
-
-			self.show(False)
-
-		def setCallback_LogScale(self, callback):
-			self._ls.setCallback(callback)
-
-		def setCallback_BubbleLavel(self, callback):
-			self._bl.setCallback(callback)
-
-		def getState_LogScale(self):
-			return self._ls.getState()
-
-		def getState_BubbleLevel(self):
-			return self._bl.getState()
-
-		def setDate(self, text):
-			self._d.setText(text)
-
-		def _setDate01(self, d, x):
-			d.setText(str(date.fromtimestamp((x-1970)*
-			                                 (365.25*24*60*60))))
-
-		def setDate0(self, date): self._setDate01(self._d0, date)
-		def setDate1(self, date): self._setDate01(self._d1, date)
+		return ret
+	#def __Header(self):
 
 	def __Range(self):
 		def callback(value):
@@ -153,48 +111,55 @@ class BitcoinRateGraph:
 
 		return self._affinis_range
 
-	def __init__(self):
-		loadData = self.__LoadData()
-		doc <= loadData
+	def __loadData_callback(self, decart, s):
+		decart.draw_callback(s)
 
-		header = self.__Header()
-		doc <= header
+		try:
+			self._loadData_callback0_done
+		except AttributeError:
+			self._loadData_callback0_done = True
+			self._loadData_callback0(decart, s)
+	#def __loadData_callback(self, decart, s):
+
+	def _loadData_callback0(self, decart, s):
+		self._header.show()
+
+		verticalRooler  = BG_VerticalRooler(decart)
+		leftRightBorder = BG_LeftRightBorder(decart)
+
+		def mouseover(dot_x, dot_y, x, y):
+			self._dateRate.setText('Дата: %s, курс: %f' % (str(date.fromtimestamp((x-1970)*
+			                                                                      (365.25*24*60*60))),
+			                                               y))
+			verticalRooler.mouseover(dot_x, x)
+			leftRightBorder.mouseover(dot_x, x)
+
+		def mousedrag(dot_x0, dot_y0,
+		              dot_x1, dot_y1,
+		              x0, y0,
+		              x1, y1):
+			leftRightBorder.mousedrag(dot_x0, dot_x1, x0, x1)
+			date0, date1 = leftRightBorder.get()
+
+			self._dateFrom.setText(date0)
+			self._dateTo.setText(date1)
+
+		decart.mouseover(mouseover)
+		decart.mousedrag(mousedrag)
+	#def _loadData_callback0(self, decart, s):
+
+	def __init__(self):
+		doc <= self.__LoadData()
+
+		self._header = self.__Header()
+		doc <= self._header
 		doc <= html.BR()
 
 		decart = BRG_Decart()
+		self._loadData_callback = lambda s: self.__loadData_callback(decart, s)
 
-		def loadData_callback(s):
-			decart.draw_callback(s)
-
-			header.show()
-
-			verticalRooler  = BG_VerticalRooler(decart)
-			leftRightBorder = BG_LeftRightBorder(decart)
-
-			def mouseover(dot_x, dot_y, x, y):
-				header.setDate('Дата: %s, курс: %f.' % (str(date.fromtimestamp((x-1970)*
-				                                                               (365.25*24*60*60))),
-				                                        y))
-				verticalRooler.mouseover(dot_x, x)
-				leftRightBorder.mouseover(dot_x, x)
-
-			def mousedrag(dot_x0, dot_y0,
-			              dot_x1, dot_y1,
-			              x0, y0,
-			              x1, y1):
-				leftRightBorder.mousedrag(dot_x0, dot_x1, x0, x1)
-				date0, date1 = leftRightBorder.get()
-				header.setDate0(date0)
-				header.setDate1(date1)
-
-			decart.mouseover(mouseover)
-			decart.mousedrag(mousedrag)
-		#def loadData_callback(s):
-
-		loadData.setCallback(loadData_callback)
-
-		header.setCallback_LogScale(decart.logY_callback)
-		header.setCallback_BubbleLavel(decart.bubbleLevel_callback)
+		self._logScale.setCallback(decart.logY_callback)
+		self._bubbleLevel.setCallback(decart.bubbleLevel_callback)
 
 		doc <= decart
 
@@ -203,7 +168,7 @@ class BitcoinRateGraph:
 
 		window.bind('resize', lambda event: decart.fit_callback())
 
-		if header.getState_LogScale():
+		if self._logScale.getState():
 			decart.setProp(BG_LogY())
 
 		decart.setProp(BG_Affinis(self._affinis_range.getState()))
