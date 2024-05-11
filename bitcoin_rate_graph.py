@@ -157,6 +157,8 @@ class BitcoinRateGraph:
 
 		self._logScale.setCallback(self.decart.logY_callback)
 		self._bubbleLevel.setCallback(self.decart.bubbleLevel_callback)
+
+		window.bind('resize', lambda event: self.__resize_callback())
 	#def __loadData_callback1(self):
 
 	def __init__(self):
@@ -169,8 +171,6 @@ class BitcoinRateGraph:
 		self.document <= self.header0
 
 		self._loadData_callback = lambda s: self.__loadData_callback(s)
-
-		window.bind('resize', lambda event: self.__resize_callback())
 #class BitcoinRateGraph:
 
 def main():
