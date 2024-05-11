@@ -8,15 +8,6 @@ from br_gui         import *
 
 from datetime       import date
 
-class BRG_Doc:
-	def __le__(self, other):
-		try:
-			document <= other
-		except TypeError:
-			document <= other.get()
-
-doc = BRG_Doc()
-
 class BRG_Decart(BG_Decart):
 	def draw_callback(self, s):
 		def convertDate(x):
@@ -47,8 +38,8 @@ class BRG_Decart(BG_Decart):
 			               BG_Grid())
 		self.redraw()
 
-	def fit_callback(self):
-		self.fit()
+	def affinas_callback(self, value):
+		self.setProp(BG_Affinis(value))
 		self.redraw()
 #class BRG_Decart(BG_Decart):
 
@@ -70,7 +61,7 @@ class BitcoinRateGraph:
 		ret <= cb
 		return cb, ret
 
-	def __Header(self):
+	def __Header1(self):
 		ret = BG_Div()
 		ret.inline()
 
@@ -99,33 +90,50 @@ class BitcoinRateGraph:
 		ret <= '. '
 
 		return ret
-	#def __Header(self):
+	#def __Header1(self):
 
-	def __Range(self):
-		def callback(value):
-			self._decart.setProp(BG_Affinis(value))
-			self._decart.redraw()
+	def __resize_callback(self):
+		self.decart.resize(window.innerWidth-200, window.innerHeight - 80)
+		self.decart.redraw()
 
-		self._affinis_range = BG_Range(callback)
-		self._affinis_range.show(False)
-
-		return self._affinis_range
-
-	def __loadData_callback(self, decart, s):
-		decart.draw_callback(s)
-
+	def __loadData_callback(self, s):
 		try:
 			self._loadData_callback0_done
 		except AttributeError:
 			self._loadData_callback0_done = True
-			self._loadData_callback0(decart, s)
+
+			self.__loadData_callback0()
+			self.decart.draw_callback(s)
+			self.__loadData_callback1()
+		else:
+			self.decart.draw_callback(s)
 	#def __loadData_callback(self, decart, s):
 
-	def _loadData_callback0(self, decart, s):
-		self._header.show()
+	def __loadData_callback0(self):
+		header1 = BG_Div()
+		header1.inline()
+		self.header0 <= self.__Header1()
 
-		verticalRooler  = BG_VerticalRooler(decart)
-		leftRightBorder = BG_LeftRightBorder(decart)
+		self.decart = BRG_Decart(window.innerWidth-200, window.innerHeight - 80)
+
+		self.document <= html.BR()
+		self.document <= self.decart
+
+		self._affinis_range = BG_Range(lambda value: self.decart.affinas_callback(value))
+		self.document <= self._affinis_range
+
+		if self._logScale.getState():
+			self.decart.setProp(BG_LogY())
+
+		self.decart.setProp(BG_Affinis(self._affinis_range.getState()))
+
+		self.decart.setRooler(BG_Frame(),
+		                      BG_Grid())
+	#def __loadData_callback0(self):
+
+	def __loadData_callback1(self):
+		verticalRooler  = BG_VerticalRooler(self.decart)
+		leftRightBorder = BG_LeftRightBorder(self.decart)
 
 		def mouseover(dot_x, dot_y, x, y):
 			self._dateRate.setText('Дата: %s, курс: %f' % (str(date.fromtimestamp((x-1970)*
@@ -144,37 +152,25 @@ class BitcoinRateGraph:
 			self._dateFrom.setText(date0)
 			self._dateTo.setText(date1)
 
-		decart.mouseover(mouseover)
-		decart.mousedrag(mousedrag)
-	#def _loadData_callback0(self, decart, s):
+		self.decart.mouseover(mouseover)
+		self.decart.mousedrag(mousedrag)
+
+		self._logScale.setCallback(self.decart.logY_callback)
+		self._bubbleLevel.setCallback(self.decart.bubbleLevel_callback)
+	#def __loadData_callback1(self):
 
 	def __init__(self):
-		doc <= self.__LoadData()
 
-		self._header = self.__Header()
-		doc <= self._header
-		doc <= html.BR()
+		self.document = BG_Document()
+		self.header0 = BG_Div()
+		self.header0.inline()
+		self.header0 <= self.__LoadData()
 
-		decart = BRG_Decart()
-		self._loadData_callback = lambda s: self.__loadData_callback(decart, s)
+		self.document <= self.header0
 
-		self._logScale.setCallback(decart.logY_callback)
-		self._bubbleLevel.setCallback(decart.bubbleLevel_callback)
+		self._loadData_callback = lambda s: self.__loadData_callback(s)
 
-		doc <= decart
-
-		decart.fit()
-		doc <= self.__Range()
-
-		window.bind('resize', lambda event: decart.fit_callback())
-
-		if self._logScale.getState():
-			decart.setProp(BG_LogY())
-
-		decart.setProp(BG_Affinis(self._affinis_range.getState()))
-
-		decart.setRooler(BG_Frame(),
-		                 BG_Grid())
+		window.bind('resize', lambda event: self.__resize_callback())
 #class BitcoinRateGraph:
 
 def main():
