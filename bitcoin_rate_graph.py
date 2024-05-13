@@ -8,6 +8,17 @@ from br_gui         import *
 
 from datetime       import date
 
+from pair_iterator  import *
+
+def convert(x):
+	def convertDate(x):
+		a = date.fromisoformat(x).timetuple()
+		b = a.tm_year
+		c = a.tm_yday
+		return b+c/366
+
+	return map(lambda i: (convertDate(i[0]), float(i[1])), x)
+
 class BRG_Decart(BG_Decart):
 	def __setProps0(self):
 		if self._logScale.getState():
@@ -44,15 +55,6 @@ class BRG_Decart(BG_Decart):
 	#def __setProps1(self):
 
 	def draw(self, s):
-		def convertDate(x):
-			a = date.fromisoformat(x).timetuple()
-			b = a.tm_year
-			c = a.tm_yday
-			return b+c/366
-
-		def convert(x):
-			return map(lambda i: (convertDate(i[0]), float(i[1])), x)
-
 		try:
 			self.__setRoolers_done
 		except AttributeError:
