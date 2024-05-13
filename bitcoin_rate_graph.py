@@ -9,7 +9,41 @@ from br_gui         import *
 from datetime       import date
 
 class BRG_Decart(BG_Decart):
-	def draw_callback(self, s):
+	def __setProps0(self):
+		if self._logScale.getState():
+			self.setProp(BG_LogY())
+
+		self.setProp(BG_Affinis(self._affinis_range.getState()))
+
+		self.setRooler(BG_Frame(),
+		               BG_Grid())
+
+	def __setProps1(self):
+		verticalRooler  = BG_VerticalRooler(self)
+		leftRightBorder = BG_LeftRightBorder(self)
+
+		def mouseover(dot_x, dot_y, x, y):
+			self._dateRate.setText('Дата: %s, курс: %f' % (str(date.fromtimestamp((x-1970)*
+			                                                                      (365.25*24*60*60))),
+			                                               y))
+			verticalRooler.mouseover(dot_x, x)
+			leftRightBorder.mouseover(dot_x, x)
+
+		def mousedrag(dot_x0, dot_y0,
+		              dot_x1, dot_y1,
+		              x0, y0,
+		              x1, y1):
+			leftRightBorder.mousedrag(dot_x0, dot_x1, x0, x1)
+			date0, date1 = leftRightBorder.get()
+
+			self._dateFrom.setText(date0)
+			self._dateTo.setText(date1)
+
+		self.mouseover(mouseover)
+		self.mousedrag(mousedrag)
+	#def __setProps1(self):
+
+	def draw(self, s):
 		def convertDate(x):
 			a = date.fromisoformat(x).timetuple()
 			b = a.tm_year
@@ -19,16 +53,29 @@ class BRG_Decart(BG_Decart):
 		def convert(x):
 			return map(lambda i: (convertDate(i[0]), float(i[1])), x)
 
-		self.draw(BG_TableFunc(convert(s)))
+		try:
+			self.__setRoolers_done
+		except AttributeError:
+			self.__setRoolers_done = True
+			self.__setProps0()
+			super().draw(BG_TableFunc(convert(s)))
+			self.__setProps1()
+			window.bind('resize', lambda event: self.__resize_callback())
+		else:
+			super().draw(BG_TableFunc(convert(s)))
 
-	def logY_callback(self, checked):
+	def __logY_callback(self, checked):
 		if checked:
 			self.setProp(BG_LogY())
 		else:
 			self.delProp(BG_LogY())
 		self.redraw()
 
-	def bubbleLevel_callback(self, checked):
+	def setLogScale(self, checkbox):
+		self._logScale = checkbox
+		checkbox.setCallback(lambda checked: self.__logY_callback(checked))
+
+	def __bubbleLevel_callback(self, checked):
 		if checked:
 			self.setRooler(BG_Frame(),
 			               BG_Grid(),
@@ -38,9 +85,30 @@ class BRG_Decart(BG_Decart):
 			               BG_Grid())
 		self.redraw()
 
-	def affinas_callback(self, value):
+	def setBubbleLevel(self, checkbox):
+		checkbox.setCallback(lambda checked: self.__bubbleLevel_callback(checked))
+
+	def setDateRate(self, div):
+		self._dateRate = div
+
+	def setDateFrom(self, div):
+		self._dateFrom = div
+
+	def setDateTo(self, div):
+		self._dateTo = div
+
+	def __affinisRange_callback(self, value):
 		self.setProp(BG_Affinis(value))
 		self.redraw()
+
+	def setAffinisRange(self, checkbox):
+		self._affinis_range = checkbox
+		checkbox.setCallback(lambda checked: self.__affinisRange_callback(checked))
+
+	def __resize_callback(self):
+		self.resize(window.innerWidth-1000, window.innerHeight - 80)
+		self.redraw()
+
 #class BRG_Decart(BG_Decart):
 
 class BitcoinRateGraph:
@@ -70,7 +138,7 @@ class BitcoinRateGraph:
 		ret <= a
 		ret <= '. '
 
-		self._bubbleLevel, a = self.__CheckBox('Логарифмический масштаб:')
+		self._bubbleLevel, a = self.__CheckBox('Горизонтальный уровень:')
 		ret <= a
 		ret <= '. '
 
@@ -92,21 +160,13 @@ class BitcoinRateGraph:
 		return ret
 	#def __Header1(self):
 
-	def __resize_callback(self):
-		self.decart.resize(window.innerWidth-200, window.innerHeight - 80)
-		self.decart.redraw()
-
 	def __loadData_callback(self, s):
 		try:
-			self._loadData_callback0_done
+			self.__loadData_callback0_done
 		except AttributeError:
-			self._loadData_callback0_done = True
-
+			self.__loadData_callback0_done = True
 			self.__loadData_callback0()
-			self.decart.draw_callback(s)
-			self.__loadData_callback1()
-		else:
-			self.decart.draw_callback(s)
+		self.decart.draw(s)
 	#def __loadData_callback(self, decart, s):
 
 	def __loadData_callback0(self):
@@ -114,52 +174,23 @@ class BitcoinRateGraph:
 		header1.inline()
 		self.header0 <= self.__Header1()
 
-		self.decart = BRG_Decart(window.innerWidth-200, window.innerHeight - 80)
-
 		self.document <= html.BR()
+
+		self.decart = BRG_Decart(window.innerWidth-1000, window.innerHeight - 80)
+
+		self.decart.setLogScale(self._logScale)
+		self.decart.setBubbleLevel(self._bubbleLevel)
+		self.decart.setDateRate(self._dateRate)
+		self.decart.setDateFrom(self._dateFrom)
+		self.decart.setDateTo(self._dateTo)
+
 		self.document <= self.decart
 
-		self._affinis_range = BG_Range(lambda value: self.decart.affinas_callback(value))
+		self._affinis_range = BG_Range()
 		self.document <= self._affinis_range
 
-		if self._logScale.getState():
-			self.decart.setProp(BG_LogY())
-
-		self.decart.setProp(BG_Affinis(self._affinis_range.getState()))
-
-		self.decart.setRooler(BG_Frame(),
-		                      BG_Grid())
+		self.decart.setAffinisRange(self._affinis_range)
 	#def __loadData_callback0(self):
-
-	def __loadData_callback1(self):
-		verticalRooler  = BG_VerticalRooler(self.decart)
-		leftRightBorder = BG_LeftRightBorder(self.decart)
-
-		def mouseover(dot_x, dot_y, x, y):
-			self._dateRate.setText('Дата: %s, курс: %f' % (str(date.fromtimestamp((x-1970)*
-			                                                                      (365.25*24*60*60))),
-			                                               y))
-			verticalRooler.mouseover(dot_x, x)
-			leftRightBorder.mouseover(dot_x, x)
-
-		def mousedrag(dot_x0, dot_y0,
-		              dot_x1, dot_y1,
-		              x0, y0,
-		              x1, y1):
-			leftRightBorder.mousedrag(dot_x0, dot_x1, x0, x1)
-			date0, date1 = leftRightBorder.get()
-
-			self._dateFrom.setText(date0)
-			self._dateTo.setText(date1)
-
-		self.decart.mouseover(mouseover)
-		self.decart.mousedrag(mousedrag)
-
-		self._logScale.setCallback(self.decart.logY_callback)
-		self._bubbleLevel.setCallback(self.decart.bubbleLevel_callback)
-
-		window.bind('resize', lambda event: self.__resize_callback())
-	#def __loadData_callback1(self):
 
 	def __init__(self):
 
