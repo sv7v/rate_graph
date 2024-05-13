@@ -113,6 +113,45 @@ class BRG_Decart(BG_Decart):
 
 #class BRG_Decart(BG_Decart):
 
+class BRG_Decart_Param(BG_Decart):
+	def __init__(self, size_x, size_y):
+		super().__init__(size_x, size_y)
+
+	def draw(self, y, x):
+		def convert_param(y, x):
+			a = dict(convert(x))
+			b = dict(convert(y))
+
+			for i in sorted(set(a.keys()) &
+			                set(b.keys()) ):
+				yield a[i], b[i]
+		a = tuple(convert_param(x, y))
+		b = tuple(zip(*a))
+
+		self._x_min = min(b[0])
+		self._y_min = min(b[1])
+		self._x_max = max(b[0])
+		self._y_max = max(b[1])
+
+		c = BG_TableFunc(a)
+
+		self._area_size.set(self._x_min,
+		                    self._y_min,
+		                    self._x_max,
+		                    self._y_max)
+
+		self.setProp(BG_LogY(), BG_Affinis(0))
+		self.setRooler(BG_Frame(),
+		               BG_Grid())
+
+		for i in flatten(self._rooler, c):
+			i.setProperty(self._props)
+			i.setSize(self._area_size)
+			i.draw(self, self._x_min, self._y_min, self._x_max, self._y_max)
+
+#	def redraw(self):
+#class BRG_Decart_Param(BG_Decart):
+
 class BitcoinRateGraph:
 	def __LoadData(self):
 		ret = BG_Div()
@@ -168,7 +207,18 @@ class BitcoinRateGraph:
 		except AttributeError:
 			self.__loadData_callback0_done = True
 			self.__loadData_callback0()
-		self.decart.draw(s)
+
+		if len(self.func2) == 2:
+			self.decart.draw(s)
+		else:
+			a, b = pair_iter(s)
+			self.decart.draw(a)
+
+			self.func2.append(b)
+
+			if len(self.func2) == 2:
+				self._draw_param(*self.func2)
+
 	#def __loadData_callback(self, decart, s):
 
 	def __loadData_callback0(self):
@@ -194,14 +244,22 @@ class BitcoinRateGraph:
 		self.decart.setAffinisRange(self._affinis_range)
 	#def __loadData_callback0(self):
 
-	def __init__(self):
+	def _draw_param(self, x, y):
+		self.decart_param = BRG_Decart_Param(400, 400)
+		self.document <= self.decart_param
 
+		self.decart_param.draw(x, y)
+
+	def __init__(self):
 		self.document = BG_Document()
+
 		self.header0 = BG_Div()
 		self.header0.inline()
 		self.header0 <= self.__LoadData()
 
 		self.document <= self.header0
+
+		self.func2 = []
 #class BitcoinRateGraph:
 
 def main():
