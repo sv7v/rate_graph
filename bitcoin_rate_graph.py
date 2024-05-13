@@ -117,8 +117,8 @@ class BitcoinRateGraph:
 		ret.inline()
 		ret <= 'Файл данных:'
 		ret <= BG_LocalTextFile(lambda s:
-		                               self._loadData_callback(map(lambda i: i.split(' '),
-		                                                           s)))
+		                               self.__loadData_callback(map(lambda i: i.split(' '),
+		                                                            s)))
 		return ret
 
 	def __CheckBox(self, text):
@@ -200,8 +200,6 @@ class BitcoinRateGraph:
 		self.header0 <= self.__LoadData()
 
 		self.document <= self.header0
-
-		self._loadData_callback = lambda s: self.__loadData_callback(s)
 #class BitcoinRateGraph:
 
 def main():
