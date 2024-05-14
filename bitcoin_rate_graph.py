@@ -24,7 +24,8 @@ class BRG_Decart(BG_Decart):
 		if self._logScale.getState():
 			self.setProp(BG_LogY())
 
-		self.setProp(BG_Affinis(self._affinis_range.getState()))
+		self.setProp(BG_LinerX(),
+		             BG_Affinis(self._affinis_range.getState()))
 
 		self.setRooler(BG_Frame(),
 		               BG_Grid())
@@ -140,7 +141,7 @@ class BRG_Decart_Param(BG_Decart):
 		                    self._x_max,
 		                    self._y_max)
 
-		self.setProp(BG_LogY(), BG_Affinis(0))
+		self.setProp(BG_LogX(), BG_LogY(), BG_Affinis(0))
 		self.setRooler(BG_Frame(),
 		               BG_Grid())
 
